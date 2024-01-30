@@ -18,7 +18,7 @@ model User {
   birth     DateTime
   sex       String
   password  String
-  posts     Post[]
+  Post     Post[]
 }
 
 model Post {
@@ -37,11 +37,11 @@ model Post {
 model Category {
   id    Int     @id @default(autoincrement())
   name  String  @unique
-  posts Post[] 
+  Post Post[] 
 }
 
 model Tag {
   id    Int    @id @default(autoincrement())
   name  String @unique
-  posts Post[] 
+  Post Post[] 
 }

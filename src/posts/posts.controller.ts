@@ -1,11 +1,16 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
   HttpStatus,
+  Post,
   Query,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
+import { CreatePostDto } from './dto/create-post.dto';
+import { User } from 'src/decorators/user.decorator';
+import { User as UserPrisma } from '@prisma/client';
 
 @Controller('')
 export class PostsController {
@@ -20,7 +25,7 @@ export class PostsController {
 
     const startIndex = (page-1)*5;
     const totalPosts = await this.postsService.getPostsCount();
-    const posts = await this.postsService.getPosts(startIndex,5, filterTerm);
+    const posts = await this.postsService.getPosts(startIndex, 5, filterTerm);
 
     return {
         data: posts,
@@ -28,6 +33,15 @@ export class PostsController {
             currentPage: page,
             totalPages:Math.ceil(totalPosts/5)
         }
+    }
+  }
+
+  @Post('create-post')
+  async createPost(@Body() postDto: CreatePostDto, @User() user: UserPrisma){
+    try {
+      return await this.postsService.createPost(user, postDto)
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.UNAUTHORIZED)
     }
   }
 }
