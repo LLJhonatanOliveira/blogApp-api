@@ -15,10 +15,11 @@ model User {
   firstName String
   lastName  String
   userName  String   @unique
-  birth     DateTime
+  birth     String
   sex       String
   password  String
   Post     Post[]
+
 }
 
 model Post {

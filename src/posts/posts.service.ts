@@ -7,39 +7,60 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class PostsService {
-   
-    constructor(private readonly repository: PostsRepository,
-        private readonly prisma: PrismaService) {}
+  
+ 
+  
+ 
+  constructor(
+    private readonly repository: PostsRepository,
+    private readonly prisma: PrismaService,
+  ) {}
+  async getPostsByUser(user: User, skip: number, take: number, filterTerm: string | undefined) {
+    return await this.repository.getPostsByUser(user.id, skip, take, filterTerm)
+  }
 
-    async getPostsCount() {
-        return await this.repository.getPostsCount()
-    }
+  async getCategories() {
+    return await this.repository.getCategories();
+  }
+  
+  async getTags() {
+    return await this.repository.getTags();
+  }
 
-    async getPosts(skip: number,take: number, filterTerm: string | undefined){
+  async getPostsCount() {
+    return await this.repository.getPostsCount();
+  }
+  async getPostsCountUser(user) {
+    return await this.repository.getPostsCountUser(user.id);
+  }
 
-       return await this.repository.getPosts(skip, take, filterTerm)
-    }
+  async getPosts(skip: number, take: number, filterTerm: string | undefined) {
+    return await this.repository.getPosts(skip, take, filterTerm);
+  }
 
-    async createPost(user: User, postDto: CreatePostDto) {
-        return this.prisma.$transaction(async(prisma) => {
-            let cat: Category;
-            let tag: Tag;
-            if(postDto.category){
-                let searchCat = await this.repository.getCategory(postDto.category)
-                if(searchCat){
-                    cat = await this.repository.createCat(postDto.category)
-                }
-            }
-
-            if(postDto.tag){
-                let searchTag = await this.repository.getTag(postDto.category)
-                if(searchTag){
-                    tag = await this.repository.createTag(postDto.category)
-                }
-            }
-
-            return this.repository.createPost(user, postDto, cat.id, tag.id);
-        })
-        
+  async createPost(user: User, postDto: CreatePostDto) {
+    return this.prisma.$transaction(async (prisma) => {
+      let cat: Category;
+      let tag: Tag;
+      if (postDto.category) {
+        let searchCat = await this.repository.getCategory(postDto.category);
+        if (!searchCat) {
+          cat = await this.repository.createCat(postDto.category);
+        } else {
+          cat = searchCat;
+        }
       }
+
+      if (postDto.tag) {
+        let searchTag = await this.repository.getTag(postDto.tag);
+        if (!searchTag) {
+          tag = await this.repository.createTag(postDto.tag);
+        } else {
+          tag = searchTag;
+        }
+      }
+
+      return this.repository.createPost(user, postDto, cat.id, tag.id);
+    });
+  }
 }

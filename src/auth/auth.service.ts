@@ -8,8 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 @Injectable()
 export class AuthService{
     private EXPIRATION_TIME = "7 days";
-  private ISSUER = "Jhonin";
-  private AUDIENCE = "users";
+    private ISSUER = "https://dev-7x5fi3d4qutlv12r.us.auth0.com/";
+    private AUDIENCE = "https://blog-app-api.com";
 
     constructor(private readonly jwtService: JwtService,
         private readonly userService: UsersService){}
@@ -21,25 +21,26 @@ export class AuthService{
     async signIn(signInDto: SignInDto){
         const {userName, password} = signInDto;
         const user = await this.userService.getUserByUsername(userName);
-    if (!user) throw new UnauthorizedException("Email or password not valid.");
+        if (!user) throw new UnauthorizedException("Email or password not valid.");
 
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) throw new UnauthorizedException("Email or password not valid.");
-    }
+        const valid = await bcrypt.compare(password, user.password);
+        if (!valid) throw new UnauthorizedException("Email or password not valid.");
+        return this.createToken(user);
+      }
 
     
     createToken(user: User){
         const { id, userName } = user;
-    //const token = this.jwtService.sign({username, id}); // quero fazer sem nada opcional
+   
 
-    const token = this.jwtService.sign({ userName }, { // payload => "corpo do jwt" [OBRIGATORIO]
-      expiresIn: this.EXPIRATION_TIME, // por quanto tempo isso aqui é válido? [OPT]
-      subject: String(id), // de quem é esse token? id [OPT]
-      issuer: this.ISSUER, // quem tá emitindo esse token lindão? // driven [OPT]
-      audience: this.AUDIENCE // pra qual serviço esse token está sendo gerado? // users [OPT]
+    const token = this.jwtService.sign({ userName }, { 
+      expiresIn: this.EXPIRATION_TIME, 
+      subject: String(id), 
+      issuer: this.ISSUER, 
+      audience: this.AUDIENCE 
     })
 
-    return { token };
+    return { token, userName };
     }
 
     checkToken(token: string){
@@ -47,7 +48,6 @@ export class AuthService{
             audience: this.AUDIENCE,
             issuer: this.ISSUER
           });
-      
           return data;
     }
 
