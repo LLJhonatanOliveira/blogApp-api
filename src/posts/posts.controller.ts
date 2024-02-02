@@ -1,19 +1,21 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   HttpStatus,
+  Param,
+  Patch,
   Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { CreatePostDto } from './dto/create-post.dto';
+import { CreatePostDto, UpdatePostDto } from './dto/create-post.dto';
 import { User } from 'src/decorators/user.decorator';
 import { User as UserPrisma } from '@prisma/client';
 import { AuthGuard } from 'src/guards/auth.guard';
-
 
 @Controller('')
 export class PostsController {
@@ -36,7 +38,7 @@ export class PostsController {
       data: posts,
       pagination: {
         currentPage: page,
-        totalPages: Math.ceil(totalPosts / 5), 
+        totalPages: Math.ceil(totalPosts / 5),
       },
     };
   }
@@ -49,41 +51,61 @@ export class PostsController {
   async getTags() {
     return await this.postsService.getTags();
   }
-  
+
   @Get('get-posts-user')
   @UseGuards(AuthGuard)
-  async getPostsByUser(@User() user: UserPrisma, @Query('page') page: number,
-  @Query('filter') filterTerm: string | undefined,){
+  async getPostsByUser(
+    @User() user: UserPrisma,
+    @Query('page') page: number,
+    @Query('filter') filterTerm: string | undefined,
+  ) {
     try {
       if (page && (isNaN(page) || page <= 0)) {
         throw new HttpException('Invalid page value', HttpStatus.BAD_REQUEST);
       }
-  
+
       const startIndex = (page - 1) * 5;
       const totalPosts = await this.postsService.getPostsCountUser(user);
-      const posts = await this.postsService.getPostsByUser(user, startIndex, 5, filterTerm);
+      const posts = await this.postsService.getPostsByUser(
+        user,
+        startIndex,
+        5,
+        filterTerm,
+      );
 
       return {
         data: posts,
         pagination: {
           currentPage: page,
-          totalPages: Math.ceil(totalPosts / 5), 
+          totalPages: Math.ceil(totalPosts / 5),
         },
       };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
     }
   }
-  
+
   @Post('create-post')
   @UseGuards(AuthGuard)
   async createPost(@Body() postDto: CreatePostDto, @User() user: UserPrisma) {
     try {
-      console.log(postDto, user)
+      console.log(postDto, user);
       return await this.postsService.createPost(user, postDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.UNAUTHORIZED);
     }
   }
 
+  @Delete('delete-post/:id')
+  async deletePost(@Param('id') id: string){
+    return await this.postsService.deletePost(+id)
+  }
+
+  @Patch('update-post/:id')
+  async updatePost(@Param('id') id: string, @Body() updateDto: UpdatePostDto){
+    
+    return await this.postsService.updatePost(+id, updateDto)
+  }
+
+  
 }

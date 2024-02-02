@@ -16,3 +16,12 @@ export class CreatePostDto {
     @IsString()
     tag?: string;
 }
+
+export class UpdatePostDto {
+    @IsString()
+    @IsNotEmpty()
+    description?: string;
+    @IsNotEmpty()
+    @IsString()
+    title?: string;
+}

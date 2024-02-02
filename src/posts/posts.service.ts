@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class PostsService {
-  
+
  
   
  
@@ -15,6 +15,14 @@ export class PostsService {
     private readonly repository: PostsRepository,
     private readonly prisma: PrismaService,
   ) {}
+  async updatePost(id: number, body) {
+    return await this.repository.updatePost(id, body)
+  }
+
+  async deletePost(id: number) {
+    return await this.repository.deletePost(id)
+  }
+  
   async getPostsByUser(user: User, skip: number, take: number, filterTerm: string | undefined) {
     return await this.repository.getPostsByUser(user.id, skip, take, filterTerm)
   }

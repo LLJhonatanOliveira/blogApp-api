@@ -1,14 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreatePostDto } from './dto/create-post.dto';
+import { CreatePostDto, UpdatePostDto } from './dto/create-post.dto';
 import { User } from '@prisma/client';
 
 @Injectable()
 export class PostsRepository {
-  
+ 
   constructor(private readonly prisma: PrismaService) {}
   
+  deletePost(id: number) {
+    return this.prisma.post.delete({
+      where: {id},
+    })
+  }
 
+  updatePost(id: number, body: UpdatePostDto) {
+    return this.prisma.post.update({
+      where: {id},
+      data: {
+        title: body.title,
+        description: body.description
+      }
+    })
+  }
+  
   getPostsCount() {
     return this.prisma.post.count({});
   }
@@ -19,6 +34,7 @@ export class PostsRepository {
       }
     });
   }
+
   getTags() {
     return this.prisma.tag.findMany();
   }
